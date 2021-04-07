@@ -1,0 +1,43 @@
+#
+# Docker Compose configuration for local environment.
+#
+version: '3.1'
+services:
+
+  #
+  # Service with the Django Python app, run with manage.py to allow hot reload while developing.
+  #
+  web:
+    build:
+      context: ../
+      args:
+        GITHUB_OAUTH_TOKEN: ${GITHUB_OAUTH_TOKEN}
+      dockerfile: docker/Dockerfile
+    env_file:
+      - ../.env
+    volumes:
+    - .:/root
+    ports:
+      - '8060:8000'
+    depends_on:
+      - db
+  #
+  # Postgres db
+  #
+  db:
+    image: postgres:12-alpine
+    restart: always
+    ports:
+      - '5432'
+    env_file:
+      - ../.env
+    volumes:
+      - postgres-store:/var/lib/postgresql/data
+
+volumes:
+  postgres-store:
+
+networks:
+  default:
+    external:
+      name: e-iprova

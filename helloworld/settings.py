@@ -11,6 +11,16 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 
 import os
+import environ
+
+# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# Import environment file
+env = environ.Env()  # pylint: disable=invalid-name
+ENV_FILE_PATH = BASE_DIR + '/.env'
+if os.path.isfile(ENV_FILE_PATH):  # pragma: no cover
+    env.read_env(ENV_FILE_PATH)
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -80,6 +90,22 @@ DATABASES = {
         'NAME': os.path.join(BASE_DIR, 'helloworld.db'),
     }
 }
+
+if env.str('DJANGO_DATABASE_URL', '') != '':
+    DATABASES_DEFAULT = env.db('DJANGO_DATABASE_URL')
+else:
+    DATABASES_DEFAULT = {
+        'ENGINE': env.str('DJANGO_DATABASE_ENGINE', 'django.db.backends.postgresql'),
+        'NAME': env.str('DJANGO_DATABASE_NAME'),
+        'USER': env.str('DJANGO_DATABASE_USER'),
+        'PASSWORD': env.str('DJANGO_DATABASE_PASSWORD'),
+        'HOST': env.str('DJANGO_DATABASE_HOST'),
+        'PORT': env.str('DJANGO_DATABASE_PORT', '5432'),
+    }
+
+DATABASES_DEFAULT['ATOMIC_REQUESTS'] = True
+DATABASES = {'default': DATABASES_DEFAULT}
+
 
 
 # Password validation
